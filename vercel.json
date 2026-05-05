@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "buildCommand": "echo 'Deploying frontend static files only - skipping Python build'",
+  "outputDirectory": "frontend",
+  "framework": null
+}
