@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: paperpilot-api
+    env: python
+    buildCommand: "pip install -r requirements.txt && playwright install chromium && playwright install-deps"
+    startCommand: "gunicorn api_server:app --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: GROQ_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
