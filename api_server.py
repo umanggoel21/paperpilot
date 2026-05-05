@@ -94,7 +94,8 @@ logger = logging.getLogger('paperpilot')
 load_dotenv()
 
 app = Flask(__name__, static_folder='frontend', static_url_path='')
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5000", "http://127.0.0.1:5000"]}})
+# Allow CORS from any domain so Vercel can connect to the Render API
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Initialize database
 if db_available:

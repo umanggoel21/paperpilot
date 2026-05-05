@@ -19,7 +19,11 @@
 // CONFIG
 // ══════════════════════════════════════════════
 
-const API_BASE = window.location.origin;
+// Automatically detect environment: use Render URL in production (Vercel), localhost for local dev
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? window.location.origin 
+    : "https://paperpilot-api.onrender.com";
+
 const HISTORY_KEY = 'paperpilot_history';
 const MAX_HISTORY = 8;
 
