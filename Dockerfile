@@ -32,9 +32,8 @@ RUN playwright install-deps
 # Copy application code
 COPY . .
 
-# Expose the port Hugging Face Spaces uses
-EXPOSE 7860
-ENV PORT=7860
+# Expose the default port (Render sets $PORT dynamically, Hugging Face uses 7860)
+EXPOSE 10000
 
-# Run the application
-CMD ["gunicorn", "api_server:app", "--bind", "0.0.0.0:7860", "--timeout", "120"]
+# Run the application using the PORT environment variable provided by the platform
+CMD gunicorn api_server:app --bind 0.0.0.0:${PORT:-10000} --timeout 120
