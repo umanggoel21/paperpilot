@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PaperPilot — AI-powered research assistant. Enter any topic and get a structured academic PDF with citations in under a minute.">
+    <meta name="keywords" content="AI research, academic papers, PDF generator, literature review, PaperPilot">
+    <title>PaperPilot — AI Research Assistant</title>
+
+    <!-- Google Fonts: Inter only -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ═══════════ NAVIGATION ═══════════ -->
+    <nav class="nav" id="main-nav">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo" id="nav-logo">
+                <span class="nav-logo-text">PaperPilot</span>
+            </a>
+            <div class="nav-links">
+                <a href="#how-it-works" id="nav-how">How it works</a>
+                <a href="#sample-report-card" id="nav-sample">View sample report</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══════════ HERO — SEARCH FIRST ═══════════ -->
+    <section class="hero" id="hero">
+        <div class="hero-inner">
+            <div class="hero-label">ACADEMIC RESEARCH PLATFORM</div>
+            <h1 class="hero-title" id="hero-title">Research that cites its sources.</h1>
+            <p class="hero-subtitle" id="hero-subtitle">
+                PaperPilot searches real academic sources, synthesizes findings, and lets you verify every claim back to its original paragraph.
+            </p>
+
+            <div class="trust-bar" id="trust-bar">
+                <span>✓ Tavily academic search</span>
+                <span class="trust-dot">·</span>
+                <span>✓ Groq Llama-3 synthesis</span>
+                <span class="trust-dot">·</span>
+                <span>✓ Click-to-verify evidence</span>
+                <span class="trust-dot">·</span>
+                <span>✓ IEEE PDF export</span>
+            </div>
+
+            <div class="search-wrap" id="search-wrap">
+                <div class="mode-cards" id="mode-selector">
+                    <button class="mode-card" data-mode="lite" id="mode-lite">
+                        <div class="mode-card-title">⚡ Lite Search</div>
+                        <div class="mode-card-desc">Quick overview · ~30 seconds</div>
+                    </button>
+                    <button class="mode-card active" data-mode="pro" id="mode-pro">
+                        <div class="mode-card-title">🔬 Pro Research</div>
+                        <div class="mode-card-desc">Deep report · browser agent</div>
+                    </button>
+                    <button class="mode-card" data-mode="deep" id="mode-deep">
+                        <div class="mode-card-title">🧠 Deep Investigation</div>
+                        <div class="mode-card-desc">Focused · clarifying questions</div>
+                    </button>
+                </div>
+
+                <div class="search-bar" id="search-bar">
+                    <input
+                        type="text"
+                        class="search-input"
+                        id="search-input"
+                        placeholder="Describe your research question in detail..."
+                        autocomplete="off"
+                        autofocus
+                    >
+                    <button class="search-btn" id="search-btn">
+                        <span class="search-btn-text">Research →</span>
+                        <span class="search-btn-loading">
+                            <span class="spinner"></span>
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Recent Searches (populated by JS from localStorage) -->
+                <div class="recent-searches" id="recent-searches" style="display:none;">
+                    <span class="recent-label"><svg class="recent-clock-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Recent:</span>
+                    <div class="recent-list" id="recent-list"></div>
+                </div>
+            </div>
+
+            <!-- Sample Report Preview -->
+            <div class="sample-report-card" id="sample-report-card">
+                <div class="sample-label">Sample output ↓</div>
+                <div class="sample-card-inner">
+                    <div class="sample-topic">The Role of CRISPR in Gene Therapy</div>
+                    <div class="sample-meta">12 sources · 4 sections · Quality 89% · Lite mode</div>
+                    <div class="sample-sections">
+                        <div class="sample-section">§1 Introduction to CRISPR Technology · 3 citations</div>
+                        <div class="sample-section">§2 Current Clinical Applications · 5 citations</div>
+                        <div class="sample-section">§3 Ethical Considerations · 4 citations</div>
+                    </div>
+                    <div class="sample-footer">Click any sentence to verify source</div>
+                </div>
+            </div>
+
+            <!-- Progress Indicator (hidden by default) -->
+            <div class="progress-tracker" id="progress-tracker">
+                <div class="progress-step" id="step-search" data-step="1">
+                    <div class="progress-step-indicator">
+                        <span class="progress-step-dot"></span>
+                    </div>
+                    <div class="progress-step-info">
+                        <span class="progress-step-title">Searching sources</span>
+                        <span class="progress-step-desc">Papers, Wikipedia & articles via Tavily</span>
+                    </div>
+                </div>
+                <div class="progress-step" id="step-extract" data-step="2">
+                    <div class="progress-step-indicator">
+                        <span class="progress-step-dot"></span>
+                    </div>
+                    <div class="progress-step-info">
+                        <span class="progress-step-title">Extracting content</span>
+                        <span class="progress-step-desc">Full-text from each source URL</span>
+                    </div>
+                </div>
+                <div class="progress-step" id="step-synthesize" data-step="3">
+                    <div class="progress-step-indicator">
+                        <span class="progress-step-dot"></span>
+                    </div>
+                    <div class="progress-step-info">
+                        <span class="progress-step-title">Synthesizing report</span>
+                        <span class="progress-step-desc">AI structures findings with citations</span>
+                    </div>
+                </div>
+                <div class="progress-step" id="step-done" data-step="4">
+                    <div class="progress-step-indicator">
+                        <span class="progress-step-dot"></span>
+                    </div>
+                    <div class="progress-step-info">
+                        <span class="progress-step-title">Complete</span>
+                        <span class="progress-step-desc">Report ready for download</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════ RESULTS WORKSPACE ═══════════ -->
+    <section class="results-workspace" id="results" style="display:none;">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-text">PaperPilot</span>
+                <h2 class="sidebar-topic" id="sidebar-topic">Topic</h2>
+            </div>
+            
+            <div class="sidebar-metrics" id="sidebar-metrics">
+                <!-- Metadata: mode, sources, quality, time -->
+            </div>
+            
+            <nav class="sidebar-toc" id="sidebar-toc">
+                <!-- TOC items -->
+            </nav>
+            
+            <hr class="sidebar-divider">
+            
+            <div class="sidebar-actions">
+                <button class="btn btn-primary full-width" id="btn-download-pdf" onclick="generatePDF()">Download PDF</button>
+                <button class="btn btn-secondary full-width" id="verify-btn-sidebar" onclick="toggleEvidenceDrawer()">Verify Evidence</button>
+            </div>
+            
+            <div class="sidebar-source-breakdown" id="sidebar-source-breakdown">
+                <!-- Papers X | Wiki X | Articles X -->
+            </div>
+        </aside>
+
+        <main class="document-panel">
+            <div class="metrics-bar" id="metrics-bar">
+                <div class="metrics-left" id="metrics-left"></div>
+                <div class="metrics-right">
+                    <button class="text-btn" onclick="openInEditor()">Edit</button>
+                    <button class="text-btn" onclick="downloadJSON()">Export</button>
+                    <button class="text-btn" onclick="copyToClipboard()">Share</button>
+                </div>
+            </div>
+
+            <article class="document-content" id="report-content">
+                <!-- Report Sections -->
+            </article>
+
+            <section class="document-references" id="document-references">
+                <!-- References -->
+            </section>
+        </main>
+        
+        <!-- Evidence Drawer -->
+        <div class="evidence-drawer" id="evidence-drawer">
+            <div class="evidence-drawer-header">
+                <h3>🔍 Source Verification</h3>
+                <button class="close-drawer-btn" onclick="toggleEvidenceDrawer()">✕</button>
+            </div>
+            <div class="evidence-verify-results" id="evidence-verify-results">
+                <p style="color: var(--text-secondary); text-align: center; padding: 20px;">Click any sentence in the document to verify its source.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════ FOOTER ═══════════ -->
+    <footer class="footer" id="footer">
+        <div class="footer-inner">
+            <div class="footer-left">
+                <svg class="footer-logo-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+                <span class="footer-name">PaperPilot</span>
+                <span class="footer-sep">·</span>
+                <span class="footer-tech">Powered by advanced AI</span>
+            </div>
+            <div class="footer-right">
+                <span>&copy; 2026</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ═══════════ DEEP RESEARCH MODAL ═══════════ -->
+    <div class="modal-overlay" id="deep-modal" style="display:none;">
+        <div class="modal-card">
+            <button class="modal-close" id="modal-close" aria-label="Close modal">&times;</button>
+
+            <!-- Step indicator -->
+            <div class="modal-steps">
+                <div class="modal-step-dot active" data-step="1">1</div>
+                <div class="modal-step-line"></div>
+                <div class="modal-step-dot" data-step="2">2</div>
+                <div class="modal-step-line"></div>
+                <div class="modal-step-dot" data-step="3">3</div>
+            </div>
+
+            <!-- STEP 1: Configuration -->
+            <div class="modal-panel active" id="deep-step-1">
+                <div class="modal-header">
+                    <h3>Deep Research Configuration</h3>
+                    <p class="modal-subtitle">Customize your research report before we start</p>
+                </div>
+
+                <div class="modal-body">
+                    <div class="config-group">
+                        <label class="config-label">Sources per category</label>
+                        <div class="config-options" id="cfg-sources">
+                            <button class="config-chip" data-value="3">3 Quick</button>
+                            <button class="config-chip active" data-value="5">5 Standard</button>
+                            <button class="config-chip" data-value="7">7 Thorough</button>
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <label class="config-label">Report length</label>
+                        <div class="config-options" id="cfg-length">
+                            <button class="config-chip" data-value="short">Short</button>
+                            <button class="config-chip active" data-value="medium">Medium</button>
+                            <button class="config-chip" data-value="long">Long</button>
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <label class="config-label">Tone</label>
+                        <div class="config-options" id="cfg-tone">
+                            <button class="config-chip" data-value="simple">Simple</button>
+                            <button class="config-chip active" data-value="professional">Professional</button>
+                            <button class="config-chip" data-value="friendly">Friendly</button>
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <label class="config-label">Focus area</label>
+                        <div class="config-options" id="cfg-focus">
+                            <button class="config-chip active" data-value="overview">Overview</button>
+                            <button class="config-chip" data-value="technical">Technical</button>
+                            <button class="config-chip" data-value="practical">Practical</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <span class="modal-uses" id="modal-uses"></span>
+                    <button class="modal-btn-primary" id="deep-next-1">Next &rarr;</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: AI Questions -->
+            <div class="modal-panel" id="deep-step-2">
+                <div class="modal-header">
+                    <h3>Help us personalize your report</h3>
+                    <p class="modal-subtitle">Answer these AI-generated questions about your topic</p>
+                </div>
+
+                <div class="modal-body">
+                    <div id="deep-questions-container">
+                        <div class="modal-loading">
+                            <span class="spinner"></span>
+                            <span>Generating personalized questions...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="modal-btn-secondary" id="deep-back-2">&larr; Back</button>
+                    <button class="modal-btn-primary" id="deep-next-2" disabled>Next &rarr;</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Plan Review -->
+            <div class="modal-panel" id="deep-step-3">
+                <div class="modal-header">
+                    <h3>Research Plan</h3>
+                    <p class="modal-subtitle">Here's what your report will cover</p>
+                </div>
+
+                <div class="modal-body">
+                    <div id="deep-plan-container">
+                        <div class="modal-loading">
+                            <span class="spinner"></span>
+                            <span>Planning your research...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="modal-btn-secondary" id="deep-back-3">&larr; Back</button>
+                    <button class="modal-btn-primary" id="deep-execute">Start Deep Research</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ PRO SEARCH MODAL ═══════════ -->
+    <div class="modal-overlay" id="pro-modal" style="display:none;">
+        <div class="modal-card pro-modal-card">
+            <button class="modal-close" id="pro-modal-close" aria-label="Close modal">&times;</button>
+
+            <!-- Step indicator -->
+            <div class="modal-steps">
+                <div class="modal-step-dot active clickable" data-step="1" role="button" tabindex="0" aria-label="Step 1: Setup">1</div>
+                <div class="modal-step-line"></div>
+                <div class="modal-step-dot clickable" data-step="2" role="button" tabindex="0" aria-label="Step 2: Plan">2</div>
+                <div class="modal-step-line"></div>
+                <div class="modal-step-dot clickable" data-step="3" role="button" tabindex="0" aria-label="Step 3: Research">3</div>
+            </div>
+
+            <!-- STEP 1: Intake Form -->
+            <div class="modal-panel active" id="pro-step-1">
+                <div class="modal-header">
+                    <h3>Pro Search Setup</h3>
+                    <p class="modal-subtitle">Tell us about your research to get a customized report</p>
+                </div>
+
+                <div class="modal-body">
+                    <div class="question-item">
+                        <div class="question-label">
+                            <span class="question-number">1</span>
+                            <span>What is the purpose of this research?</span>
+                        </div>
+                        <div class="config-options" id="pro-purpose">
+                            <button class="config-chip" data-value="academic paper">Academic Paper</button>
+                            <button class="config-chip active" data-value="learning">Self-Learning</button>
+                            <button class="config-chip" data-value="presentation">Presentation</button>
+                            <button class="config-chip" data-value="report">Project Report</button>
+                        </div>
+                    </div>
+
+                    <div class="question-item">
+                        <div class="question-label">
+                            <span class="question-number">2</span>
+                            <span>Who is your intended audience?</span>
+                        </div>
+                        <div class="config-options" id="pro-audience">
+                            <button class="config-chip active" data-value="academic">Academic</button>
+                            <button class="config-chip" data-value="professional">Professional</button>
+                            <button class="config-chip" data-value="general">General Public</button>
+                        </div>
+                    </div>
+
+                    <div class="question-item">
+                        <div class="question-label">
+                            <span class="question-number">3</span>
+                            <span>How deep should the analysis go?</span>
+                        </div>
+                        <div class="config-options" id="pro-depth">
+                            <button class="config-chip" data-value="surface">Surface Overview</button>
+                            <button class="config-chip active" data-value="comprehensive">Comprehensive</button>
+                            <button class="config-chip" data-value="expert">Expert Deep-Dive</button>
+                        </div>
+                    </div>
+
+                    <div class="question-item">
+                        <div class="question-label">
+                            <span class="question-number">4</span>
+                            <span>Preferred report length and tone</span>
+                        </div>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                            <div class="config-options" id="pro-length">
+                                <button class="config-chip" data-value="short">Short</button>
+                                <button class="config-chip active" data-value="medium">Medium</button>
+                                <button class="config-chip" data-value="long">Long</button>
+                            </div>
+                            <div class="config-options" id="pro-tone">
+                                <button class="config-chip" data-value="simple">Simple</button>
+                                <button class="config-chip active" data-value="professional">Professional</button>
+                                <button class="config-chip" data-value="friendly">Friendly</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-item">
+                        <div class="question-label">
+                            <span class="question-number">5</span>
+                            <span>Which sub-topics interest you?</span>
+                        </div>
+                        <div class="config-options pro-subtopics" id="pro-subtopics">
+                            <div class="modal-loading" id="pro-chips-loading">
+                                <span class="spinner"></span>
+                                <span>Loading topic-specific options...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-item">
+                        <div class="question-label">
+                            <span class="question-number">6</span>
+                            <span>Any specific questions or focus areas? (optional)</span>
+                        </div>
+                        <input type="text" class="question-input" id="pro-custom-focus" placeholder="e.g. Focus on recent breakthroughs after 2023">
+                    </div>
+                </div>
+
+                <div class="modal-footer pro-footer-fullwidth">
+                    <span class="modal-uses"></span>
+                    <button class="modal-btn-primary pro-btn-fullwidth" id="pro-next-1">Generate Plan &rarr;</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Plan Review -->
+            <div class="modal-panel" id="pro-step-2">
+                <div class="modal-header">
+                    <h3>Research Plan</h3>
+                    <p class="modal-subtitle">Here's what your report will cover</p>
+                </div>
+                <div class="modal-body">
+                    <div id="pro-plan-container">
+                        <div class="modal-loading">
+                            <span class="spinner"></span>
+                            <span>Generating your research plan...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer pro-footer-fullwidth">
+                    <button class="modal-btn-secondary" id="pro-back-2">&larr; Back</button>
+                    <button class="modal-btn-primary pro-btn-fullwidth" id="pro-execute">Start Pro Research</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Live Agent + Progress -->
+            <div class="modal-panel" id="pro-step-3">
+                <div class="modal-header">
+                    <div class="modal-header-row">
+                        <div>
+                            <h3>Live Computer</h3>
+                            <p class="modal-subtitle">Watch the AI browse the web in real-time</p>
+                        </div>
+                        <button class="agent-cancel-btn" id="agent-cancel-btn" aria-label="Cancel agent">✕ Cancel</button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <!-- Phase indicator bar -->
+                    <div class="agent-phases" id="agent-phases">
+                        <div class="agent-phase active" data-phase="agent">
+                            <span class="agent-phase-icon">🌐</span>
+                            <span>Browser Agent</span>
+                        </div>
+                        <div class="agent-phase-arrow">→</div>
+                        <div class="agent-phase" data-phase="search">
+                            <span class="agent-phase-icon">🔍</span>
+                            <span>Deep Search</span>
+                        </div>
+                        <div class="agent-phase-arrow">→</div>
+                        <div class="agent-phase" data-phase="synthesis">
+                            <span class="agent-phase-icon">🧠</span>
+                            <span>AI Synthesis</span>
+                        </div>
+                    </div>
+
+                    <!-- Live terminal -->
+                    <div class="agent-terminal" id="agent-terminal">
+                        <div class="agent-terminal-header">
+                            <div class="terminal-dots" aria-hidden="true">
+                                <span class="dot red" aria-label="Close"></span>
+                                <span class="dot yellow" aria-label="Minimize"></span>
+                                <span class="dot green" aria-label="Maximize"></span>
+                            </div>
+                            <span class="terminal-title">PaperPilot Agent</span>
+                            <span class="terminal-status" id="agent-status-badge">● Initializing</span>
+                        </div>
+                        <div class="agent-terminal-body" id="agent-log">
+                            <div class="agent-log-entry system">
+                                <span class="log-time">--:--</span>
+                                <span class="log-msg">Waiting for agent to start...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sources found counter -->
+                    <div class="agent-stats" id="agent-stats">
+                        <div class="agent-stat">
+                            <span class="agent-stat-value" id="agent-steps-count">0</span>
+                            <span class="agent-stat-label">Steps</span>
+                        </div>
+                        <div class="agent-stat">
+                            <span class="agent-stat-value" id="agent-pages-count">0</span>
+                            <span class="agent-stat-label">Pages Visited</span>
+                        </div>
+                        <div class="agent-stat">
+                            <span class="agent-stat-value" id="agent-findings-count">0</span>
+                            <span class="agent-stat-label">Findings</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
